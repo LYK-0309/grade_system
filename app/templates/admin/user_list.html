@@ -32,7 +32,7 @@
     </div>
     <div class="table-responsive">
         <table class="table table-hover">
-            <thead><tr><th style="width:40px;"><input type="checkbox" class="form-check-input" id="selectAll" onchange="toggleAll(this)"></th><th>ID</th><th>用户名</th><th>姓名</th><th>角色</th><th>状态</th><th>创建时间</th><th>最近登录</th><th>操作</th></tr></thead>
+            <thead><tr><th style="width:40px;"><input type="checkbox" class="form-check-input" id="selectAll" onchange="toggleAll(this)"></th><th class="sortable">ID</th><th class="sortable">用户名</th><th class="sortable">姓名</th><th class="sortable">角色</th><th class="sortable">状态</th><th class="sortable">创建时间</th><th class="sortable">最近登录</th><th>操作</th></tr></thead>
             <tbody>
                 {% for user in pagination.items %}
                 <tr>

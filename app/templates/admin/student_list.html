@@ -25,7 +25,7 @@
     </div>
     <div class="table-responsive">
         <table class="table table-hover">
-            <thead><tr><th style="width:40px;"><input type="checkbox" class="form-check-input" id="selectAll" onchange="toggleAll(this)"></th><th>学号</th><th>姓名</th><th>性别</th><th>班级</th><th>院系</th><th>专业</th><th>状态</th><th>操作</th></tr></thead>
+            <thead><tr><th style="width:40px;"><input type="checkbox" class="form-check-input" id="selectAll" onchange="toggleAll(this)"></th><th class="sortable">学号</th><th class="sortable">姓名</th><th class="sortable">性别</th><th class="sortable">班级</th><th class="sortable">院系</th><th class="sortable">专业</th><th class="sortable">状态</th><th>操作</th></tr></thead>
             <tbody>
                 {% for s in pagination.items %}
                 <tr>

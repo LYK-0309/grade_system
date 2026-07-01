@@ -14,7 +14,7 @@
     </div>
     <div class="table-responsive">
         <table class="table table-hover">
-            <thead><tr><th style="width:40px;"><input type="checkbox" class="form-check-input" id="selectAll" onchange="toggleAll(this)"></th><th>课程编号</th><th>课程名称</th><th>学分</th><th>课时</th><th>考核类型</th><th>授课教师</th><th>班级</th><th>学期</th><th>锁定</th><th>操作</th></tr></thead>
+            <thead><tr><th style="width:40px;"><input type="checkbox" class="form-check-input" id="selectAll" onchange="toggleAll(this)"></th><th class="sortable">课程编号</th><th class="sortable">课程名称</th><th class="sortable">学分</th><th class="sortable">课时</th><th class="sortable">考核类型</th><th class="sortable">授课教师</th><th class="sortable">班级</th><th class="sortable">学期</th><th class="sortable">锁定</th><th>操作</th></tr></thead>
             <tbody>
                 {% for c in courses %}
                 <tr>

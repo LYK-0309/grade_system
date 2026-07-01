@@ -12,7 +12,7 @@
     </div>
     <div class="table-responsive">
         <table class="table table-hover">
-            <thead><tr><th style="width:40px;"><input type="checkbox" class="form-check-input" id="selectAll" onchange="toggleAll(this)"></th><th>工号</th><th>姓名</th><th>院系</th><th>授课数</th><th>操作</th></tr></thead>
+            <thead><tr><th style="width:40px;"><input type="checkbox" class="form-check-input" id="selectAll" onchange="toggleAll(this)"></th><th class="sortable">工号</th><th class="sortable">姓名</th><th class="sortable">院系</th><th class="sortable">授课数</th><th>操作</th></tr></thead>
             <tbody>
                 {% for t in teachers %}
                 <tr>

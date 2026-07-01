@@ -12,7 +12,7 @@
     </div>
     <div class="table-responsive">
         <table class="table table-hover">
-            <thead><tr><th style="width:40px;"><input type="checkbox" class="form-check-input" id="selectAll" onchange="toggleAll(this)"></th><th>标题</th><th>目标</th><th>置顶</th><th>发布时间</th><th>操作</th></tr></thead>
+            <thead><tr><th style="width:40px;"><input type="checkbox" class="form-check-input" id="selectAll" onchange="toggleAll(this)"></th><th class="sortable">标题</th><th class="sortable">目标</th><th class="sortable">置顶</th><th class="sortable">发布时间</th><th>操作</th></tr></thead>
             <tbody>
                 {% for n in notifs %}
                 <tr>

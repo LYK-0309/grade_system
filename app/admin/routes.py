@@ -5,7 +5,7 @@ from flask import render_template, redirect, url_for, request, flash, jsonify, s
 from flask_login import login_required, current_user
 from app.models import (db, User, ClassInfo, Student, Teacher, Course, Grade,
                         LoginLog, OperationLog, Notification, SystemSetting, GradeRevision)
-from app.utils import (admin_required, role_required, log_operation,
+from app.utils import (admin_required, role_required, academic_or_admin, log_operation,
                        create_grade_export, export_to_bytes)
 from datetime import datetime, date
 import io
@@ -511,12 +511,13 @@ def course_form(course_id=None):
 
 @admin_bp.route('/courses/<int:course_id>/delete', methods=['POST'])
 @login_required
-@admin_required
+@academic_or_admin
 def course_delete(course_id):
     c = Course.query.get_or_404(course_id)
     if c.grades.count() > 0:
         flash('该课程有成绩记录，无法删除', 'danger')
         return redirect(url_for('admin.course_list'))
+    log_operation('delete', '删除课程', f'课程 {c.name}({c.course_code})')
     db.session.delete(c)
     db.session.commit()
     flash('课程已删除', 'success')

@@ -163,6 +163,26 @@
         [data-bs-theme="dark"] .topbar-title { color: #F1F5F9; }
         .topbar-right { display: flex; align-items: center; gap: 1.25rem; }
 
+        /* ── 返回按钮 ── */
+        .back-btn {
+            width: 42px; height: 42px;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            background: var(--card-bg);
+            color: #64748B;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: all .2s;
+            font-size: 1.2rem; flex-shrink: 0;
+        }
+        .back-btn:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+        /* ── 排序表头 ── */
+        .table thead th.sortable { cursor: pointer; user-select: none; position: relative; }
+        .table thead th.sortable:hover { color: var(--primary); }
+        .table thead th.sortable::after { content: '\F2C2'; font-family: 'bootstrap-icons'; font-size: .85rem; margin-left: .35rem; opacity: .4; }
+        .table thead th.sortable.sort-asc::after { content: '\F286'; opacity: 1; color: var(--primary); }
+        .table thead th.sortable.sort-desc::after { content: '\F282'; opacity: 1; color: var(--primary); }
+
         .content-area {
             padding: 3.5rem;
             flex: 1;
@@ -529,6 +549,9 @@
     <div class="main-content">
         <div class="topbar">
             <div class="d-flex align-items-center gap-2">
+                <button class="back-btn" onclick="history.back()" title="返回上一页">
+                    <i class="bi bi-arrow-left"></i>
+                </button>
                 <button class="btn btn-sm btn-light d-md-none" onclick="document.getElementById('sidebar').classList.toggle('show')">
                     <i class="bi bi-list"></i>
                 </button>
@@ -620,6 +643,43 @@
             if (dropdown && !e.target.closest('.dropdown')) {
                 dropdown.classList.remove('show');
             }
+        });
+
+        // ── 表格排序功能 ──
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('th.sortable').forEach(th => {
+                th.addEventListener('click', function() {
+                    const table = this.closest('table');
+                    const tbody = table.querySelector('tbody');
+                    const rows = Array.from(tbody.querySelectorAll('tr'));
+                    if (rows.length === 0 || rows[0].querySelector('td').colSpan) return;
+
+                    const colIndex = Array.from(this.parentNode.children).indexOf(this);
+                    const isAsc = this.classList.contains('sort-asc');
+
+                    document.querySelectorAll('th.sortable').forEach(h => {
+                        h.classList.remove('sort-asc', 'sort-desc');
+                    });
+                    this.classList.add(isAsc ? 'sort-desc' : 'sort-asc');
+
+                    const dir = isAsc ? -1 : 1;
+                    const getVal = (row) => {
+                        const cell = row.children[colIndex];
+                        if (!cell) return '';
+                        const txt = cell.textContent.trim();
+                        const num = parseFloat(txt);
+                        return isNaN(num) ? txt : num;
+                    };
+
+                    rows.sort((a, b) => {
+                        let va = getVal(a), vb = getVal(b);
+                        if (typeof va === 'number' && typeof vb === 'number') return (va - vb) * dir;
+                        return String(va).localeCompare(String(vb), 'zh') * dir;
+                    });
+
+                    rows.forEach(r => tbody.appendChild(r));
+                });
+            });
         });
     </script>
     {% block extra_js %}{% endblock %}
