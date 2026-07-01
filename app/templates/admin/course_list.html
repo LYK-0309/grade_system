@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block title %}课程管理{% endblock %}
+{% block page_title %}课程管理{% endblock %}
+{% block content %}
+<div class="table-card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-book"></i> 课程列表</span>
+        {% if current_user.is_super_admin or current_user.is_academic %}
+        <a href="{{ url_for('admin.course_form') }}" class="btn btn-sm btn-primary"><i class="bi bi-plus-lg"></i> 新建课程</a>
+        {% endif %}
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead><tr><th>课程编号</th><th>课程名称</th><th>学分</th><th>课时</th><th>考核类型</th><th>授课教师</th><th>班级</th><th>学期</th><th>锁定</th><th>操作</th></tr></thead>
+            <tbody>
+                {% for c in courses %}
+                <tr>
+                    <td><strong>{{ c.course_code }}</strong></td>
+                    <td>{{ c.name }}</td>
+                    <td>{{ c.credit }}</td>
+                    <td>{{ c.hours }}</td>
+                    <td><span class="badge bg-{{ c.assessment_badge }}">{{ c.assessment_type }}</span></td>
+                    <td>{{ c.teacher.name if c.teacher else '-' }}</td>
+                    <td><small>{{ c.class_info.name if c.class_info else '-' }}</small></td>
+                    <td><small>{{ c.semester }}</small></td>
+                    <td>{% if c.is_locked %}<span class="badge bg-danger"><i class="bi bi-lock-fill"></i> 锁定</span>{% else %}<span class="badge bg-success"><i class="bi bi-unlock"></i> 正常</span>{% endif %}</td>
+                    <td>
+                        {% if current_user.is_teacher %}
+                        <a href="{{ url_for('teacher.course_detail', course_id=c.id) }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-eye"></i></a>
+                        <a href="{{ url_for('teacher.grade_entry', course_id=c.id) }}" class="btn btn-sm btn-outline-success"><i class="bi bi-pencil-square"></i></a>
+                        {% else %}
+                        <a href="{{ url_for('teacher.course_detail', course_id=c.id) }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-eye"></i></a>
+                        {% if current_user.is_super_admin or current_user.is_academic %}
+                        <a href="{{ url_for('admin.course_form', course_id=c.id) }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i></a>
+                        <form method="POST" action="{{ url_for('admin.course_lock', course_id=c.id) }}" class="d-inline"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-sm btn-outline-warning" title="{{ '解锁' if c.is_locked else '锁定' }}"><i class="bi bi-{{ 'unlock' if c.is_locked else 'lock' }}"></i></button></form>
+                        <form method="POST" action="{{ url_for('admin.course_delete', course_id=c.id) }}" class="d-inline" onsubmit="return confirm('确定删除?')"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button></form>
+                        {% endif %}
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="10" class="text-center text-muted py-4">暂无课程数据</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

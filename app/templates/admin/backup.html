@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block title %}数据备份{% endblock %}
+{% block page_title %}数据备份{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="table-card mb-3">
+            <div class="card-header"><i class="bi bi-shield-check"></i> 数据备份</div>
+            <div class="p-4">
+                <div class="alert alert-info"><i class="bi bi-info-circle"></i> 备份将以SQLite数据库文件形式保存，包含所有成绩、学生、课程等数据。</div>
+                <form method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-download"></i> 立即备份</button>
+                </form>
+            </div>
+        </div>
+        <div class="table-card">
+            <div class="card-header"><i class="bi bi-folder"></i> 备份记录</div>
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead><tr><th>文件名</th><th>大小</th><th>备份时间</th><th>操作</th></tr></thead>
+                    <tbody>
+                        {% for b in backups %}
+                        <tr>
+                            <td><i class="bi bi-database"></i> {{ b.name }}</td>
+                            <td>{{ b.size }}</td>
+                            <td>{{ b.time }}</td>
+                            <td><a href="{{ url_for('admin.backup_download', filename=b.name) }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-download"></i> 下载</a></td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="4" class="text-center text-muted py-4">暂无备份</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

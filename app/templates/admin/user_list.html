@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% block title %}用户管理{% endblock %}
+{% block page_title %}用户管理{% endblock %}
+{% block content %}
+<div class="table-card">
+    <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <span><i class="bi bi-people"></i> 用户列表</span>
+        <div class="d-flex gap-2 flex-wrap">
+            <a href="{{ url_for('admin.batch_create_students') }}" class="btn btn-sm btn-outline-success"><i class="bi bi-magic"></i> 批量创建学生账号</a>
+            <a href="{{ url_for('admin.user_create') }}" class="btn btn-sm btn-primary"><i class="bi bi-plus-lg"></i> 新建用户</a>
+        </div>
+    </div>
+    <div class="p-3">
+        <form method="GET" class="row g-2 mb-3">
+            <div class="col-auto">
+                <select name="role" class="form-select form-select-sm">
+                    <option value="">全部角色</option>
+                    <option value="super_admin" {% if role == 'super_admin' %}selected{% endif %}>超级管理员</option>
+                    <option value="teacher" {% if role == 'teacher' %}selected{% endif %}>教师</option>
+                    <option value="student" {% if role == 'student' %}selected{% endif %}>学生</option>
+                    <option value="academic" {% if role == 'academic' %}selected{% endif %}>教务管理员</option>
+                </select>
+            </div>
+            <div class="col-auto">
+                <input type="text" name="keyword" value="{{ keyword }}" class="form-control form-control-sm" placeholder="搜索用户名/姓名">
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-sm btn-primary"><i class="bi bi-search"></i></button>
+            </div>
+        </form>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead><tr><th>ID</th><th>用户名</th><th>姓名</th><th>角色</th><th>状态</th><th>创建时间</th><th>最近登录</th><th>操作</th></tr></thead>
+            <tbody>
+                {% for user in pagination.items %}
+                <tr>
+                    <td>{{ user.id }}</td>
+                    <td><strong>{{ user.username }}</strong></td>
+                    <td>{{ user.name }}</td>
+                    <td><span class="badge bg-{% if user.is_super_admin %}danger{% elif user.is_teacher %}primary{% elif user.is_student %}success{% else %}warning{% endif %}">{{ user.role_name }}</span></td>
+                    <td>{% if user.is_active_user %}<span class="badge bg-success">启用</span>{% else %}<span class="badge bg-secondary">禁用</span>{% endif %}</td>
+                    <td><small>{{ user.created_at.strftime('%Y-%m-%d') if user.created_at else '-' }}</small></td>
+                    <td><small>{{ user.last_login.strftime('%Y-%m-%d %H:%M') if user.last_login else '从未' }}</small></td>
+                    <td>
+                        <a href="{{ url_for('admin.user_edit', user_id=user.id) }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
+                        {% if user.username != 'LYK' %}
+                        <form method="POST" action="{{ url_for('admin.user_delete', user_id=user.id) }}" class="d-inline" onsubmit="return confirm('确定删除用户 {{ user.username }}?')">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% include 'includes/pagination.html' %}
+</div>
+{% endblock %}

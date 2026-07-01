@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block title %}批量创建学生账号{% endblock %}
+{% block page_title %}批量创建学生账号{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="table-card">
+            <div class="card-header"><i class="bi bi-magic"></i> 批量创建学生账号</div>
+            <div class="p-4">
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i> 此操作将为所有尚未创建账号的学生自动创建账号。
+                    <br><strong>用户名为学号，初始密码为学号</strong>。
+                </div>
+                <form method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="mb-3">
+                        <label class="form-label small fw-medium">选择班级 (留空为全部)</label>
+                        <select name="class_id" class="form-select">
+                            <option value="">全部班级</option>
+                            {% for c in classes %}
+                            <option value="{{ c.id }}">{{ c.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary" onclick="return confirm('确定批量创建学生账号?')"><i class="bi bi-check-lg"></i> 开始创建</button>
+                    <a href="{{ url_for('admin.user_list') }}" class="btn btn-outline-secondary">返回</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

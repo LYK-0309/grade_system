@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% block title %}学生管理{% endblock %}
+{% block page_title %}学生管理{% endblock %}
+{% block content %}
+<div class="table-card">
+    <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <span><i class="bi bi-person-lines-fill"></i> 学生列表</span>
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('admin.student_template') }}" class="btn btn-sm btn-outline-info"><i class="bi bi-download"></i> 下载模板</a>
+            <form method="POST" action="{{ url_for('admin.student_import') }}" enctype="multipart/form-data" class="d-inline">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <label class="btn btn-sm btn-outline-success"><i class="bi bi-upload"></i> 批量导入<input type="file" name="file" accept=".xlsx,.xls" onchange="this.form.submit()" hidden></label>
+            </form>
+            <a href="{{ url_for('admin.student_form') }}" class="btn btn-sm btn-primary"><i class="bi bi-plus-lg"></i> 新建学生</a>
+        </div>
+    </div>
+    <div class="p-3">
+        <form method="GET" class="row g-2 mb-3">
+            <div class="col-auto"><select name="class_id" class="form-select form-select-sm"><option value="">全部班级</option>{% for c in classes %}<option value="{{ c.id }}" {% if class_id == c.id %}selected{% endif %}>{{ c.name }}</option>{% endfor %}</select></div>
+            <div class="col-auto"><select name="status" class="form-select form-select-sm"><option value="">全部状态</option><option value="正常" {% if status == '正常' %}selected{% endif %}>正常</option><option value="休学" {% if status == '休学' %}selected{% endif %}>休学</option><option value="退学" {% if status == '退学' %}selected{% endif %}>退学</option></select></div>
+            <div class="col-auto"><input type="text" name="keyword" value="{{ keyword }}" class="form-control form-control-sm" placeholder="学号/姓名"></div>
+            <div class="col-auto"><button type="submit" class="btn btn-sm btn-primary"><i class="bi bi-search"></i></button></div>
+        </form>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead><tr><th>学号</th><th>姓名</th><th>性别</th><th>班级</th><th>院系</th><th>专业</th><th>状态</th><th>操作</th></tr></thead>
+            <tbody>
+                {% for s in pagination.items %}
+                <tr>
+                    <td><strong>{{ s.student_no }}</strong></td>
+                    <td>{{ s.name }}</td>
+                    <td>{{ s.gender or '-' }}</td>
+                    <td>{{ s.class_info.name if s.class_info else '-' }}</td>
+                    <td><small>{{ s.college or '-' }}</small></td>
+                    <td><small>{{ s.major or '-' }}</small></td>
+                    <td><span class="badge bg-{{ s.status_badge }}">{{ s.status }}</span></td>
+                    <td>
+                        <a href="{{ url_for('admin.student_form', student_id=s.id) }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
+                        <form method="POST" action="{{ url_for('admin.student_delete', student_id=s.id) }}" class="d-inline" onsubmit="return confirm('确定删除?')"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button></form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="8" class="text-center text-muted py-4">暂无学生数据</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% include 'includes/pagination.html' %}
+</div>
+{% endblock %}

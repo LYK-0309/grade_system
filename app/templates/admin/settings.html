@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block title %}系统设置{% endblock %}
+{% block page_title %}系统设置{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="table-card">
+            <div class="card-header"><i class="bi bi-gear"></i> 系统设置</div>
+            <div class="p-4">
+                <form method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="row">
+                        <div class="col-md-4 mb-3"><label class="form-label small fw-medium">满分分值</label><input type="number" name="max_score" class="form-control" value="{{ settings.get('max_score', '100') }}"></div>
+                        <div class="col-md-4 mb-3"><label class="form-label small fw-medium">及格分值</label><input type="number" name="pass_score" class="form-control" value="{{ settings.get('pass_score', '60') }}"></div>
+                        <div class="col-md-4 mb-3"><label class="form-label small fw-medium">优秀分值</label><input type="number" name="excellent_score" class="form-control" value="{{ settings.get('excellent_score', '90') }}"></div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3"><label class="form-label small fw-medium">当前学期</label><input type="text" name="current_semester" class="form-control" value="{{ settings.get('current_semester', '2025-2026-2') }}"></div>
+                        <div class="col-md-6 mb-3"><label class="form-label small fw-medium">绩点规则</label><select name="gpa_rule" class="form-select"><option value="4.0制" {% if settings.get('gpa_rule') == '4.0制' %}selected{% endif %}>4.0制</option><option value="5.0制" {% if settings.get('gpa_rule') == '5.0制' %}selected{% endif %}>5.0制</option></select></div>
+                    </div>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> 保存设置</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

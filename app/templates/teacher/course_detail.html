@@ -1,0 +1,156 @@
+{% extends 'base.html' %}
+{% block title %}课程详情 - {{ course.name }}{% endblock %}
+{% block page_title %}{{ course.name }} - 课程详情{% endblock %}
+{% block content %}
+<div class="row g-3 mb-3">
+    <div class="col-6 col-md-2">
+        <div class="stat-card text-center"><p class="stat-label">应考人数</p><h4>{{ stats.count }}</h4></div>
+    </div>
+    <div class="col-6 col-md-2">
+        <div class="stat-card text-center"><p class="stat-label">有效成绩</p><h4>{{ stats.valid_count }}</h4></div>
+    </div>
+    <div class="col-6 col-md-2">
+        <div class="stat-card text-center"><p class="stat-label">平均分</p><h4 style="color:#2563EB;">{{ stats.avg }}</h4></div>
+    </div>
+    <div class="col-6 col-md-2">
+        <div class="stat-card text-center"><p class="stat-label">及格率</p><h4 style="color:#16A34A;">{{ stats.pass_rate }}%</h4></div>
+    </div>
+    <div class="col-6 col-md-2">
+        <div class="stat-card text-center"><p class="stat-label">最高分</p><h4 style="color:#F59E0B;">{{ stats.max }}</h4></div>
+    </div>
+    <div class="col-6 col-md-2">
+        <div class="stat-card text-center"><p class="stat-label">最低分</p><h4 style="color:#DC2626;">{{ stats.min }}</h4></div>
+    </div>
+</div>
+
+<div class="row g-3 mb-3">
+    <div class="col-md-6">
+        <div class="table-card">
+            <div class="card-header"><i class="bi bi-bar-chart"></i> 成绩分布</div>
+            <div class="p-3"><div class="chart-container"><canvas id="distChart"></canvas></div></div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="table-card">
+            <div class="card-header"><i class="bi bi-pie-chart"></i> 统计概览</div>
+            <div class="p-4">
+                <table class="table table-sm">
+                    <tr><td>及格人数</td><td class="text-end fw-bold text-success">{{ stats.pass_count }}</td><td>不及格人数</td><td class="text-end fw-bold text-danger">{{ stats.fail_count }}</td></tr>
+                    <tr><td>优秀率(>=90)</td><td class="text-end fw-bold">{{ stats.excellent_rate }}%</td><td>标准差</td><td class="text-end">{{ stats.std }}</td></tr>
+                    <tr><td>平均绩点</td><td class="text-end fw-bold text-primary">{{ stats.gpa_avg }}</td><td>有效人数</td><td class="text-end">{{ stats.valid_count }}</td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="table-card">
+    <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <span><i class="bi bi-list-ul"></i> 成绩列表 ({{ exam_type }})</span>
+        <div class="d-flex gap-2">
+            <form method="GET" class="d-flex gap-1">
+                <select name="exam_type" class="form-select form-select-sm" style="width:auto;" onchange="this.form.submit()">
+                    {% for et in exam_types %}
+                    <option value="{{ et }}" {% if exam_type == et %}selected{% endif %}>{{ et }}</option>
+                    {% endfor %}
+                </select>
+            </form>
+            {% if not course.is_locked or current_user.is_super_admin %}
+            <a href="{{ url_for('teacher.grade_entry', course_id=course.id, exam_type=exam_type) }}" class="btn btn-sm btn-success"><i class="bi bi-pencil-square"></i> 录入/修改</a>
+            {% endif %}
+            <a href="{{ url_for('teacher.makeup_list', course_id=course.id) }}" class="btn btn-sm btn-outline-warning"><i class="bi bi-arrow-repeat"></i> 补考</a>
+            <a href="{{ url_for('teacher.grade_export', course_id=course.id, exam_type=exam_type) }}" class="btn btn-sm btn-outline-info"><i class="bi bi-download"></i> 导出</a>
+            <button onclick="window.print()" class="btn btn-sm btn-outline-secondary no-print"><i class="bi bi-printer"></i> 打印</button>
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead><tr><th>排名</th><th>学号</th><th>姓名</th><th>讨论</th><th>作业</th><th>签到</th><th>积分</th><th>PBL</th><th>综合成绩</th><th>等级</th><th>绩点</th><th>特殊</th><th class="no-print">操作</th></tr></thead>
+            <tbody>
+                {% for stu in students %}
+                {% set g = stu._grade %}
+                {% if g %}
+                <tr>
+                    <td>
+                        {% if rankings.get(stu.id) %}
+                            {% set rank = rankings.get(stu.id) %}
+                            {% if rank <= 3 %}<span class="badge bg-warning">{{ rank }}</span>{% else %}{{ rank }}{% endif %}
+                        {% else %}-{% endif %}
+                    </td>
+                    <td><strong>{{ stu.student_no }}</strong></td>
+                    <td>{{ stu.name }}</td>
+                    <td>{{ '%.2f' % g.score_discuss if g.score_discuss else '-' }}</td>
+                    <td>{{ '%.2f' % g.score_homework if g.score_homework else '-' }}</td>
+                    <td>{{ '%.2f' % g.score_attendance if g.score_attendance else '-' }}</td>
+                    <td>{{ '%.2f' % g.score_points if g.score_points else '-' }}</td>
+                    <td>{{ '%.2f' % g.score_pbl if g.score_pbl else '-' }}</td>
+                    <td><strong class="{% if g.is_pass %}text-success{% else %}text-danger{% endif %}">{{ g.score_display }}</strong></td>
+                    <td><span class="badge bg-{% if g.grade_level == 'A' %}success{% elif g.grade_level == 'B' %}primary{% elif g.grade_level == 'C' %}info{% elif g.grade_level == 'D' %}warning{% else %}danger{% endif %}">{{ g.grade_level }}</span></td>
+                    <td>{{ '%.1f' % g.gpa if g.gpa else '0.0' }}</td>
+                    <td>{% if g.special_mark %}<span class="badge bg-danger">{{ g.special_mark }}</span>{% else %}-{% endif %}</td>
+                    <td class="no-print">
+                        {% if not g.is_locked or current_user.is_super_admin %}
+                        <button class="btn btn-sm btn-outline-warning" data-bs-toggle="modal" data-bs-target="#revModal" data-student="{{ stu.name }}" data-grade="{{ g.id }}" data-score="{{ g.score_display }}"><i class="bi bi-pencil"></i></button>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr class="text-muted"><td>-</td><td>{{ stu.student_no }}</td><td>{{ stu.name }}</td><td colspan="10" class="text-center">未录入</td></tr>
+                {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- 修改申请弹窗 -->
+<div class="modal fade" id="revModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" id="revForm">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="modal-header"><h5 class="modal-title">成绩修改申请</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body">
+                    <p>学生: <strong id="revStudent"></strong></p>
+                    <p>当前成绩: <span id="revCurrent"></span></p>
+                    <div class="mb-3"><label class="form-label small">新成绩</label><input type="number" step="0.01" name="new_score" class="form-control"></div>
+                    <div class="mb-3"><label class="form-label small">特殊标记</label><select name="new_special" class="form-select"><option value="">正常</option><option value="缺考">缺考</option><option value="作弊">作弊</option><option value="缓考">缓考</option></select></div>
+                    <div class="mb-3"><label class="form-label small">修改原因 *</label><textarea name="reason" class="form-control" rows="2" required></textarea></div>
+                </div>
+                <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button><button type="submit" class="btn btn-primary">提交申请</button></div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('revModal').addEventListener('show.bs.modal', function(e) {
+    var btn = e.relatedTarget;
+    document.getElementById('revStudent').textContent = btn.dataset.student;
+    document.getElementById('revCurrent').textContent = btn.dataset.score;
+    document.getElementById('revForm').action = '/teacher/grades/' + btn.dataset.grade + '/revise';
+});
+</script>
+<script>
+var ctx = document.getElementById('distChart');
+if (ctx) {
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: {{ distribution.keys() | list | tojson }},
+            datasets: [{
+                label: '人数',
+                data: {{ distribution.values() | list | tojson }},
+                backgroundColor: ['#16A34A', '#2563EB', '#F59E0B', '#F97316', '#DC2626', '#6B7280'],
+                borderRadius: 6,
+            }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+        }
+    });
+}
+</script>
+{% endblock %}

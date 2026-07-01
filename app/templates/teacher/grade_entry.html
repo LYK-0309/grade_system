@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% block title %}成绩录入 - {{ course.name }}{% endblock %}
+{% block page_title %}成绩录入 - {{ course.name }}{% endblock %}
+{% block content %}
+<div class="table-card">
+    <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <span><i class="bi bi-pencil-square"></i> {{ course.name }} - 成绩录入 ({{ exam_type }})</span>
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('teacher.grade_template', course_id=course.id) }}" class="btn btn-sm btn-outline-info"><i class="bi bi-download"></i> 下载模板</a>
+            <form method="POST" action="{{ url_for('teacher.grade_import', course_id=course.id) }}" enctype="multipart/form-data" class="d-inline">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="exam_type" value="{{ exam_type }}">
+                <label class="btn btn-sm btn-outline-success"><i class="bi bi-upload"></i> 导入Excel<input type="file" name="file" accept=".xlsx,.xls" onchange="this.form.submit()" hidden></label>
+            </form>
+        </div>
+    </div>
+    <div class="p-3">
+        <form method="GET" class="d-flex gap-2 align-items-center">
+            <label class="small fw-medium">考试批次:</label>
+            <select name="exam_type" class="form-select form-select-sm" style="width:auto;" onchange="this.form.submit()">
+                {% for et in ['期中', '期末', '补考', '重修'] %}
+                <option value="{{ et }}" {% if exam_type == et %}selected{% endif %}>{{ et }}</option>
+                {% endfor %}
+            </select>
+        </form>
+    </div>
+    <form method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="exam_type" value="{{ exam_type }}">
+        <div class="table-responsive">
+            <table class="table table-sm align-middle">
+                <thead>
+                    <tr>
+                        <th style="width:40px;">#</th>
+                        <th>学号</th>
+                        <th>姓名</th>
+                        <th style="width:80px;">讨论(20)</th>
+                        <th style="width:80px;">作业(30)</th>
+                        <th style="width:80px;">签到(10)</th>
+                        <th style="width:80px;">积分(20)</th>
+                        <th style="width:80px;">PBL(20)</th>
+                        <th style="width:90px;">综合成绩</th>
+                        <th style="width:100px;">特殊标记</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for stu in students %}
+                    {% set g = existing.get(stu.id) %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td><strong>{{ stu.student_no }}</strong></td>
+                        <td>{{ stu.name }}</td>
+                        <td><input type="number" step="0.01" name="discuss_{{ stu.id }}" value="{{ g.score_discuss if g and g.score_discuss else '' }}" class="form-control form-control-sm" style="width:70px;"></td>
+                        <td><input type="number" step="0.01" name="homework_{{ stu.id }}" value="{{ g.score_homework if g and g.score_homework else '' }}" class="form-control form-control-sm" style="width:70px;"></td>
+                        <td><input type="number" step="0.01" name="attendance_{{ stu.id }}" value="{{ g.score_attendance if g and g.score_attendance else '' }}" class="form-control form-control-sm" style="width:70px;"></td>
+                        <td><input type="number" step="0.01" name="points_{{ stu.id }}" value="{{ g.score_points if g and g.score_points else '' }}" class="form-control form-control-sm" style="width:70px;"></td>
+                        <td><input type="number" step="0.01" name="pbl_{{ stu.id }}" value="{{ g.score_pbl if g and g.score_pbl else '' }}" class="form-control form-control-sm" style="width:70px;"></td>
+                        <td><input type="number" step="0.01" name="score_{{ stu.id }}" value="{{ '%.2f' % g.score if g and g.score else '' }}" class="form-control form-control-sm" style="width:80px;" {% if g and g.special_mark %}disabled{% endif %}></td>
+                        <td>
+                            <select name="special_{{ stu.id }}" class="form-select form-select-sm" style="width:90px;" onchange="var inp=this.closest('tr').querySelector('input[name^=score_]'); if(this.value){inp.disabled=true;inp.value='';}else{inp.disabled=false;}">
+                                <option value="">正常</option>
+                                <option value="缺考" {% if g and g.special_mark == '缺考' %}selected{% endif %}>缺考</option>
+                                <option value="作弊" {% if g and g.special_mark == '作弊' %}selected{% endif %}>作弊</option>
+                                <option value="缓考" {% if g and g.special_mark == '缓考' %}selected{% endif %}>缓考</option>
+                            </select>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="p-3 d-flex gap-2">
+            <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> 保存成绩</button>
+            <a href="{{ url_for('teacher.course_detail', course_id=course.id) }}" class="btn btn-outline-secondary">取消</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

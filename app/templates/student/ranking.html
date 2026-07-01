@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block title %}班级排名{% endblock %}
+{% block page_title %}班级排名 - {{ stu.class_info.name if stu.class_info else '' }}{% endblock %}
+{% block content %}
+<div class="table-card">
+    <div class="card-header"><i class="bi bi-trophy"></i> 班级排名 (按平均分)</div>
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead><tr><th>排名</th><th>学号</th><th>姓名</th><th>科目数</th><th>总分</th><th>平均分</th><th>平均GPA</th><th>不及格</th></tr></thead>
+            <tbody>
+                {% for item in rankings %}
+                <tr class="{% if item.student.id == stu.id %}table-primary{% endif %}">
+                    <td>
+                        {% if item.rank <= 3 %}
+                        <span class="badge bg-{% if item.rank == 1 %}warning{% elif item.rank == 2 %}secondary{% else %}info{% endif %}" style="font-size:1.25rem;">
+                            <i class="bi bi-{% if item.rank == 1 %}trophy-fill{% elif item.rank == 2 %}award-fill{% else %}award{% endif %}"></i> {{ item.rank }}
+                        </span>
+                        {% else %}{{ item.rank }}{% endif %}
+                    </td>
+                    <td><strong>{{ item.student.student_no }}</strong></td>
+                    <td>{{ item.student.name }}{% if item.student.id == stu.id %} <span class="badge bg-primary">我</span>{% endif %}</td>
+                    <td>{{ item.course_count }}</td>
+                    <td>{{ item.total_score }}</td>
+                    <td><strong style="color:#2563EB;">{{ item.avg_score }}</strong></td>
+                    <td><strong>{{ item.avg_gpa }}</strong></td>
+                    <td>{% if item.fail_count > 0 %}<span class="badge bg-danger">{{ item.fail_count }}</span>{% else %}<span class="text-success">-</span>{% endif %}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

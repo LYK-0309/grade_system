@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block title %}{{ '新建教师' if t is none else '编辑教师' }}{% endblock %}
+{% block page_title %}{{ '新建教师' if t is none else '编辑教师' }}{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="table-card">
+            <div class="card-header"><i class="bi bi-person-badge"></i> {{ '新建教师' if t is none else '编辑教师' }}</div>
+            <div class="p-4">
+                <form method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="mb-3"><label class="form-label small fw-medium">工号 *</label><input type="text" name="teacher_no" class="form-control" value="{{ t.teacher_no if t else '' }}" required></div>
+                    <div class="mb-3"><label class="form-label small fw-medium">姓名 *</label><input type="text" name="name" class="form-control" value="{{ t.name if t else '' }}" required></div>
+                    <div class="mb-3"><label class="form-label small fw-medium">院系</label><input type="text" name="department" class="form-control" value="{{ t.department if t else '' }}"></div>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> 保存</button>
+                    <a href="{{ url_for('admin.teacher_list') }}" class="btn btn-outline-secondary">返回</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

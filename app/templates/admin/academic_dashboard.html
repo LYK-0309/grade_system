@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% block title %}教务仪表板{% endblock %}
+{% block page_title %}教务管理仪表板{% endblock %}
+{% block content %}
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-4">
+        <div class="stat-card d-flex align-items-center gap-3">
+            <div class="stat-icon" style="background:linear-gradient(135deg,#2563EB,#1E40AF);"><i class="bi bi-building"></i></div>
+            <div><p class="stat-value">{{ stats.class_count }}</p><p class="stat-label">班级数</p></div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4">
+        <div class="stat-card d-flex align-items-center gap-3">
+            <div class="stat-icon" style="background:linear-gradient(135deg,#16A34A,#15803D);"><i class="bi bi-mortarboard"></i></div>
+            <div><p class="stat-value">{{ stats.student_count }}</p><p class="stat-label">学生总数</p></div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4">
+        <div class="stat-card d-flex align-items-center gap-3">
+            <div class="stat-icon" style="background:linear-gradient(135deg,#F59E0B,#D97706);"><i class="bi bi-book"></i></div>
+            <div><p class="stat-value">{{ stats.course_count }}</p><p class="stat-label">课程数</p></div>
+        </div>
+    </div>
+</div>
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-4">
+        <div class="stat-card d-flex align-items-center gap-3">
+            <div class="stat-icon" style="background:linear-gradient(135deg,#8B5CF6,#7C3AED);"><i class="bi bi-clipboard-data"></i></div>
+            <div><p class="stat-value">{{ stats.grade_count }}</p><p class="stat-label">成绩记录</p></div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4">
+        <div class="stat-card d-flex align-items-center gap-3">
+            <div class="stat-icon" style="background:linear-gradient(135deg,#DC2626,#991B1B);"><i class="bi bi-exclamation-triangle"></i></div>
+            <div><p class="stat-value">{{ stats.fail_count }}</p><p class="stat-label">不及格人次</p></div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4">
+        <div class="stat-card d-flex align-items-center gap-3">
+            <div class="stat-icon" style="background:linear-gradient(135deg,#EC4899,#DB2777);"><i class="bi bi-clipboard-check"></i></div>
+            <div><p class="stat-value">{{ stats.revision_pending }}</p><p class="stat-label">待审核修改</p></div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-md-6">
+        <div class="table-card">
+            <div class="card-header"><i class="bi bi-lightning"></i> 快捷操作</div>
+            <div class="p-3 d-grid gap-2">
+                <a href="{{ url_for('admin.revision_list') }}" class="btn btn-outline-primary text-start"><i class="bi bi-clipboard-check"></i> 成绩修改审核 {% if stats.revision_pending %}<span class="badge bg-danger float-end">{{ stats.revision_pending }}</span>{% endif %}</a>
+                <a href="{{ url_for('teacher.grade_search') }}" class="btn btn-outline-primary text-start"><i class="bi bi-search"></i> 成绩查询</a>
+                <a href="{{ url_for('admin.student_list') }}" class="btn btn-outline-primary text-start"><i class="bi bi-person-lines-fill"></i> 学生管理</a>
+                <a href="{{ url_for('admin.course_list') }}" class="btn btn-outline-primary text-start"><i class="bi bi-book"></i> 课程管理</a>
+                <a href="{{ url_for('admin.notification_list') }}" class="btn btn-outline-primary text-start"><i class="bi bi-megaphone"></i> 发布通知</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="table-card">
+            <div class="card-header"><i class="bi bi-bar-chart"></i> 系统概况</div>
+            <div class="p-4">
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between small mb-1"><span>成绩录入覆盖率</span><span>{{ stats.grade_count }}/{{ stats.student_count * stats.course_count if stats.course_count > 0 else 0 }}</span></div>
+                    <div class="progress"><div class="progress-bar bg-primary" style="width: {{ (stats.grade_count / (stats.student_count * stats.course_count) * 100) if stats.course_count > 0 and stats.student_count > 0 else 0 }}%"></div></div>
+                </div>
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between small mb-1"><span>不及格率</span><span>{{ '%.1f' % (stats.fail_count / stats.grade_count * 100 if stats.grade_count > 0 else 0) }}%</span></div>
+                    <div class="progress"><div class="progress-bar bg-danger" style="width: {{ (stats.fail_count / stats.grade_count * 100) if stats.grade_count > 0 else 0 }}%"></div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

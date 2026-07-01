@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+{% block title %}仪表板 - 学生成绩管理系统（刘聿康）{% endblock %}
+{% block page_title %}<i class="bi bi-speedometer2"></i> 系统仪表板{% endblock %}
+{% block content %}
+<!-- 概览统计 -->
+<div class="page-header">
+    <h4>欢迎回来，{{ current_user.name }}</h4>
+    <p>以下是系统全局数据概览</p>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-6 col-xl-3">
+        <div class="stat-card d-flex align-items-center gap-3">
+            <div class="stat-icon" style="background:linear-gradient(135deg,#3B82F6,#1D4ED8);"><i class="bi bi-people-fill"></i></div>
+            <div>
+                <p class="stat-value">{{ stats.user_count }}</p>
+                <p class="stat-label">总用户数</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-xl-3">
+        <div class="stat-card d-flex align-items-center gap-3">
+            <div class="stat-icon" style="background:linear-gradient(135deg,#10B981,#059669);"><i class="bi bi-mortarboard-fill"></i></div>
+            <div>
+                <p class="stat-value">{{ stats.student_count }}</p>
+                <p class="stat-label">学生总数</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-xl-3">
+        <div class="stat-card d-flex align-items-center gap-3">
+            <div class="stat-icon" style="background:linear-gradient(135deg,#F59E0B,#D97706);"><i class="bi bi-book-fill"></i></div>
+            <div>
+                <p class="stat-value">{{ stats.course_count }}</p>
+                <p class="stat-label">课程总数</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-xl-3">
+        <div class="stat-card d-flex align-items-center gap-3">
+            <div class="stat-icon" style="background:linear-gradient(135deg,#8B5CF6,#6D28D9);"><i class="bi bi-clipboard-data-fill"></i></div>
+            <div>
+                <p class="stat-value">{{ stats.grade_count }}</p>
+                <p class="stat-label">成绩记录</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 二级统计 -->
+<div class="row g-4 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="stat-card text-center p-3">
+            <div class="stat-mini-value" style="color:#3B82F6;">{{ stats.teacher_users }}</div>
+            <div class="stat-label">教师用户</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card text-center p-3">
+            <div class="stat-mini-value" style="color:#10B981;">{{ stats.student_users }}</div>
+            <div class="stat-label">学生用户</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card text-center p-3">
+            <div class="stat-mini-value" style="color:#F59E0B;">{{ stats.active_users }}</div>
+            <div class="stat-label">活跃用户</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card text-center p-3">
+            <div class="stat-mini-value" style="color:#8B5CF6;">{{ stats.class_count }}</div>
+            <div class="stat-label">班级数</div>
+        </div>
+    </div>
+</div>
+
+<!-- 快捷操作 -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3 col-lg-2">
+        <a href="{{ url_for('admin.user_list') }}" class="quick-action">
+            <i class="bi bi-person-plus" style="color:#3B82F6;"></i>
+            <span>添加用户</span>
+        </a>
+    </div>
+    <div class="col-6 col-md-3 col-lg-2">
+        <a href="{{ url_for('admin.student_list') }}" class="quick-action">
+            <i class="bi bi-people-fill" style="color:#10B981;"></i>
+            <span>学生管理</span>
+        </a>
+    </div>
+    <div class="col-6 col-md-3 col-lg-2">
+        <a href="{{ url_for('admin.course_list') }}" class="quick-action">
+            <i class="bi bi-book-fill" style="color:#F59E0B;"></i>
+            <span>课程管理</span>
+        </a>
+    </div>
+    <div class="col-6 col-md-3 col-lg-2">
+        <a href="{{ url_for('admin.revision_list') }}" class="quick-action">
+            <i class="bi bi-clipboard-check" style="color:#8B5CF6;"></i>
+            <span>成绩审核</span>
+        </a>
+    </div>
+    <div class="col-6 col-md-3 col-lg-2">
+        <a href="{{ url_for('admin.settings') }}" class="quick-action">
+            <i class="bi bi-gear-fill" style="color:#64748B;"></i>
+            <span>系统设置</span>
+        </a>
+    </div>
+    <div class="col-6 col-md-3 col-lg-2">
+        <a href="{{ url_for('admin.backup') }}" class="quick-action">
+            <i class="bi bi-shield-check" style="color:#EF4444;"></i>
+            <span>数据备份</span>
+        </a>
+    </div>
+</div>
+
+<!-- 最近日志 -->
+<div class="table-card">
+    <div class="card-header">
+        <i class="bi bi-clock-history text-primary"></i> 最近操作日志
+        <a href="{{ url_for('admin.operation_logs') }}" class="btn btn-sm btn-outline-primary ms-auto">查看全部 <i class="bi bi-arrow-right"></i></a>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead><tr><th>时间</th><th>用户</th><th>操作</th><th>对象</th><th>详情</th></tr></thead>
+            <tbody>
+                {% for log in recent_logs %}
+                <tr>
+                    <td><small>{{ log.created_at.strftime('%m-%d %H:%M') }}</small></td>
+                    <td><strong>{{ log.username }}</strong></td>
+                    <td><span class="badge bg-{% if log.action == 'create' %}success{% elif log.action == 'update' %}primary{% elif log.action == 'delete' %}danger{% elif log.action == 'export' %}info{% else %}secondary{% endif %}">{{ log.action }}</span></td>
+                    <td>{{ log.target }}</td>
+                    <td><small class="text-muted">{{ log.detail[:60] }}{% if log.detail|length > 60 %}...{% endif %}</small></td>
+                </tr>
+                {% else %}
+                <tr><td colspan="5" class="text-center text-muted py-4">暂无操作记录</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

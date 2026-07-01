@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% block title %}个人成绩单{% endblock %}
+{% block page_title %}个人成绩单{% endblock %}
+{% block content %}
+<div class="table-card">
+    <div class="card-header d-flex justify-content-between align-items-center no-print">
+        <span><i class="bi bi-file-earmark-text"></i> 成绩单 - {{ stu.name }}({{ stu.student_no }})</span>
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('student.transcript_export') }}" class="btn btn-sm btn-outline-info"><i class="bi bi-download"></i> 导出Excel</a>
+            <button onclick="window.print()" class="btn btn-sm btn-outline-secondary"><i class="bi bi-printer"></i> 打印</button>
+        </div>
+    </div>
+    <div class="p-4">
+        <!-- 成绩单头部 -->
+        <div class="text-center mb-4">
+            <h4 style="font-weight:700;letter-spacing:2px;">学生成绩单</h4>
+            <p class="text-muted small mb-0">STUDENT TRANSCRIPT</p>
+        </div>
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <table class="table table-sm table-borderless">
+                    <tr><td style="width:80px;" class="text-muted">姓名</td><td><strong>{{ stu.name }}</strong></td><td style="width:80px;" class="text-muted">学号</td><td><strong>{{ stu.student_no }}</strong></td></tr>
+                    <tr><td class="text-muted">院系</td><td>{{ stu.college or '-' }}</td><td class="text-muted">专业</td><td>{{ stu.major or '-' }}</td></tr>
+                    <tr><td class="text-muted">班级</td><td>{{ stu.class_info.name if stu.class_info else '-' }}</td><td class="text-muted">状态</td><td><span class="badge bg-{{ stu.status_badge }}">{{ stu.status }}</span></td></tr>
+                </table>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card text-center">
+                    <p class="stat-label">平均绩点 GPA</p>
+                    <h2 style="color:#2563EB;font-weight:800;">{{ avg_gpa }}</h2>
+                    <hr class="my-2">
+                    <div class="d-flex justify-content-around">
+                        <div><small class="text-muted">平均分</small><br><strong>{{ avg_score }}</strong></div>
+                        <div><small class="text-muted">总学分</small><br><strong>{{ total_credits }}</strong></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <table class="table table-bordered">
+            <thead>
+                <tr class="text-center" style="background:var(--primary-light);">
+                    <th>课程编号</th><th>课程名称</th><th>学分</th><th>考核类型</th><th>成绩</th><th>等级</th><th>绩点</th><th>班级排名</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for g in grades %}
+                <tr class="text-center">
+                    <td>{{ g.course.course_code }}</td>
+                    <td class="text-start">{{ g.course.name }}</td>
+                    <td>{{ g.course.credit }}</td>
+                    <td>{{ g.course.assessment_type }}</td>
+                    <td><strong class="{% if g.is_pass %}text-success{% else %}text-danger{% endif %}">{{ g.score_display }}</strong></td>
+                    <td><span class="badge bg-{% if g.grade_level == 'A' %}success{% elif g.grade_level == 'B' %}primary{% elif g.grade_level == 'C' %}info{% elif g.grade_level == 'D' %}warning{% else %}danger{% endif %}">{{ g.grade_level }}</span></td>
+                    <td>{{ '%.1f' % g.gpa if g.gpa else '0.0' }}</td>
+                    <td>{{ g._rank }}/{{ g._total }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="8" class="text-center text-muted py-4">暂无成绩</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="mt-4 text-end">
+            <p class="small text-muted">打印日期: {{ now.strftime('%Y年%m月%d日') if now else '' }}</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

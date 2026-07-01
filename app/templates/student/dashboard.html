@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% block title %}学生仪表板{% endblock %}
+{% block page_title %}我的成绩{% endblock %}
+{% block content %}
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="stat-card d-flex align-items-center gap-3">
+            <div class="stat-icon" style="background:linear-gradient(135deg,#2563EB,#1E40AF);"><i class="bi bi-book"></i></div>
+            <div><p class="stat-value">{{ stats.course_count }}</p><p class="stat-label">已修科目</p></div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card d-flex align-items-center gap-3">
+            <div class="stat-icon" style="background:linear-gradient(135deg,#16A34A,#15803D);"><i class="bi bi-graph-up"></i></div>
+            <div><p class="stat-value">{{ stats.avg_score }}</p><p class="stat-label">平均分</p></div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card d-flex align-items-center gap-3">
+            <div class="stat-icon" style="background:linear-gradient(135deg,#F59E0B,#D97706);"><i class="bi bi-star"></i></div>
+            <div><p class="stat-value">{{ stats.total_gpa }}</p><p class="stat-label">平均绩点</p></div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card d-flex align-items-center gap-3">
+            <div class="stat-icon" style="background:linear-gradient(135deg,#DC2626,#991B1B);"><i class="bi bi-exclamation-triangle"></i></div>
+            <div><p class="stat-value">{{ stats.fail_count }}</p><p class="stat-label">不及格数</p></div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-md-7">
+        <div class="table-card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-list-check"></i> 最近成绩</span>
+                <a href="{{ url_for('student.my_grades') }}" class="btn btn-sm btn-outline-primary">查看全部</a>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead><tr><th>课程</th><th>成绩</th><th>等级</th><th>绩点</th><th>状态</th></tr></thead>
+                    <tbody>
+                        {% for g in grades %}
+                        <tr>
+                            <td>{{ g.course.name }}</td>
+                            <td><strong class="{% if g.is_pass %}text-success{% else %}text-danger{% endif %}">{{ g.score_display }}</strong></td>
+                            <td><span class="badge bg-{% if g.grade_level == 'A' %}success{% elif g.grade_level == 'B' %}primary{% elif g.grade_level == 'C' %}info{% elif g.grade_level == 'D' %}warning{% else %}danger{% endif %}">{{ g.grade_level }}</span></td>
+                            <td>{{ '%.1f' % g.gpa if g.gpa else '0.0' }}</td>
+                            <td>{% if g.is_pass %}<span class="badge bg-success">及格</span>{% else %}<span class="badge bg-danger">不及格</span>{% endif %}</td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="5" class="text-center text-muted py-4">暂无成绩</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-5">
+        <div class="table-card mb-3">
+            <div class="card-header"><i class="bi bi-bell"></i> 通知公告</div>
+            <div class="p-3">
+                {% for n in notifs %}
+                <div class="border-bottom py-2">
+                    <div class="d-flex justify-content-between">
+                        <strong class="small">{{ n.title }}{% if n.is_pinned %} <i class="bi bi-pin-angle-fill text-warning"></i>{% endif %}</strong>
+                        <small class="text-muted">{{ n.created_at.strftime('%m-%d') }}</small>
+                    </div>
+                    <p class="small text-muted mb-0 mt-1">{{ n.content[:80] }}{% if n.content|length > 80 %}...{% endif %}</p>
+                </div>
+                {% else %}
+                <p class="text-center text-muted small py-3">暂无通知</p>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="table-card">
+            <div class="card-header"><i class="bi bi-info-circle"></i> 个人信息</div>
+            <div class="p-3">
+                <table class="table table-sm">
+                    <tr><td class="text-muted">学号</td><td><strong>{{ stu.student_no }}</strong></td></tr>
+                    <tr><td class="text-muted">姓名</td><td>{{ stu.name }}</td></tr>
+                    <tr><td class="text-muted">班级</td><td>{{ stu.class_info.name if stu.class_info else '-' }}</td></tr>
+                    <tr><td class="text-muted">院系</td><td>{{ stu.college or '-' }}</td></tr>
+                    <tr><td class="text-muted">状态</td><td><span class="badge bg-{{ stu.status_badge }}">{{ stu.status }}</span></td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

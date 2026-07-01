@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block title %}我的成绩{% endblock %}
+{% block page_title %}我的成绩{% endblock %}
+{% block content %}
+<div class="table-card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-list-check"></i> 成绩列表 ({{ exam_type }})</span>
+        <form method="GET" class="d-flex gap-1">
+            <select name="exam_type" class="form-select form-select-sm" style="width:auto;" onchange="this.form.submit()">
+                {% for et in exam_types %}
+                <option value="{{ et }}" {% if exam_type == et %}selected{% endif %}>{{ et }}</option>
+                {% else %}
+                <option value="期末">期末</option>
+                {% endfor %}
+            </select>
+        </form>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead><tr><th>课程编号</th><th>课程名称</th><th>学分</th><th>考核类型</th><th>成绩</th><th>等级</th><th>绩点</th><th>状态</th><th>特殊</th></tr></thead>
+            <tbody>
+                {% for g in grades %}
+                <tr>
+                    <td><strong>{{ g.course.course_code }}</strong></td>
+                    <td>{{ g.course.name }}</td>
+                    <td>{{ g.course.credit }}</td>
+                    <td><span class="badge bg-{% if g.course.assessment_type == '考试' %}primary{% else %}info{% endif %}">{{ g.course.assessment_type }}</span></td>
+                    <td><strong class="{% if g.is_pass %}text-success{% else %}text-danger{% endif %}">{{ g.score_display }}</strong></td>
+                    <td><span class="badge bg-{% if g.grade_level == 'A' %}success{% elif g.grade_level == 'B' %}primary{% elif g.grade_level == 'C' %}info{% elif g.grade_level == 'D' %}warning{% else %}danger{% endif %}">{{ g.grade_level }}</span></td>
+                    <td>{{ '%.1f' % g.gpa if g.gpa else '0.0' }}</td>
+                    <td>{% if g.is_pass %}<span class="badge bg-success">及格</span>{% else %}<span class="badge bg-danger">不及格</span>{% endif %}</td>
+                    <td>{% if g.special_mark %}<span class="badge bg-danger">{{ g.special_mark }}</span>{% else %}-{% endif %}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="9" class="text-center text-muted py-4">暂无成绩数据</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

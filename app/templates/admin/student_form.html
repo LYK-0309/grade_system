@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block title %}{{ '新建学生' if stu is none else '编辑学生' }}{% endblock %}
+{% block page_title %}{{ '新建学生' if stu is none else '编辑学生' }}{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="table-card">
+            <div class="card-header"><i class="bi bi-person-plus"></i> {{ '新建学生' if stu is none else '编辑学生' }}</div>
+            <div class="p-4">
+                <form method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="row">
+                        <div class="col-md-6 mb-3"><label class="form-label small fw-medium">学号 *</label><input type="text" name="student_no" class="form-control" value="{{ stu.student_no if stu else '' }}" required></div>
+                        <div class="col-md-6 mb-3"><label class="form-label small fw-medium">姓名 *</label><input type="text" name="name" class="form-control" value="{{ stu.name if stu else '' }}" required></div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label small fw-medium">性别</label>
+                            <select name="gender" class="form-select"><option value="">请选择</option><option value="男" {% if stu and stu.gender == '男' %}selected{% endif %}>男</option><option value="女" {% if stu and stu.gender == '女' %}selected{% endif %}>女</option></select>
+                        </div>
+                        <div class="col-md-4 mb-3"><label class="form-label small fw-medium">入学时间</label><input type="date" name="enrollment_date" class="form-control" value="{{ stu.enrollment_date.strftime('%Y-%m-%d') if stu and stu.enrollment_date else '' }}"></div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label small fw-medium">学籍状态</label>
+                            <select name="status" class="form-select"><option value="正常" {% if stu and stu.status == '正常' %}selected{% endif %}>正常</option><option value="休学" {% if stu and stu.status == '休学' %}selected{% endif %}>休学</option><option value="退学" {% if stu and stu.status == '退学' %}selected{% endif %}>退学</option></select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label small fw-medium">班级</label>
+                            <select name="class_id" class="form-select"><option value="">请选择</option>{% for c in classes %}<option value="{{ c.id }}" {% if stu and stu.class_id == c.id %}selected{% endif %}>{{ c.name }}</option>{% endfor %}</select>
+                        </div>
+                        <div class="col-md-4 mb-3"><label class="form-label small fw-medium">院系</label><input type="text" name="college" class="form-control" value="{{ stu.college if stu else '' }}"></div>
+                        <div class="col-md-4 mb-3"><label class="form-label small fw-medium">专业</label><input type="text" name="major" class="form-control" value="{{ stu.major if stu else '' }}"></div>
+                    </div>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> 保存</button>
+                    <a href="{{ url_for('admin.student_list') }}" class="btn btn-outline-secondary">返回</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

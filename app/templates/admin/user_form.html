@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block title %}{{ '新建用户' if mode == 'create' else '编辑用户' }}{% endblock %}
+{% block page_title %}{{ '新建用户' if mode == 'create' else '编辑用户' }}{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="table-card">
+            <div class="card-header"><i class="bi bi-person-plus"></i> {{ '新建用户' if mode == 'create' else '编辑用户' }}</div>
+            <div class="p-4">
+                <form method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label small fw-medium">用户名 *</label>
+                            <input type="text" name="username" class="form-control" value="{{ user.username if user else '' }}" required {% if user %}readonly{% endif %}>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label small fw-medium">姓名 *</label>
+                            <input type="text" name="name" class="form-control" value="{{ user.name if user else '' }}" required>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label small fw-medium">角色 *</label>
+                            <select name="role" class="form-select">
+                                <option value="super_admin" {% if user and user.role == 'super_admin' %}selected{% endif %}>超级管理员</option>
+                                <option value="teacher" {% if user and user.role == 'teacher' %}selected{% endif %}>教师</option>
+                                <option value="student" {% if user and user.role == 'student' %}selected{% endif %}>学生</option>
+                                <option value="academic" {% if user and user.role == 'academic' %}selected{% endif %}>教务管理员</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label small fw-medium">{{ '密码 (留空不修改)' if user else '密码 *' }}</label>
+                            <input type="password" name="password" class="form-control" {% if not user %}required{% endif %} placeholder="{{ '留空保持原密码' if user else '请输入密码' }}">
+                        </div>
+                    </div>
+                    {% if user %}
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input type="checkbox" name="is_active" class="form-check-input" id="is_active" {% if user.is_active_user %}checked{% endif %}>
+                            <label class="form-check-label" for="is_active">启用账号</label>
+                        </div>
+                    </div>
+                    {% endif %}
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> 保存</button>
+                    <a href="{{ url_for('admin.user_list') }}" class="btn btn-outline-secondary">返回</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}学生成绩管理系统（刘聿康）{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #3B82F6;
+            --primary-dark: #1D4ED8;
+            --primary-light: #EFF6FF;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+            --bg-main: #F0F4F8;
+            --card-bg: #FFFFFF;
+            --card-shadow: 0 1px 2px rgba(0,0,0,.05), 0 1px 3px rgba(0,0,0,.1);
+            --card-shadow-hover: 0 10px 25px rgba(0,0,0,.08), 0 4px 10px rgba(0,0,0,.04);
+            --sidebar-width: 330px;
+            --sidebar-bg: #0F172A;
+            --sidebar-hover: rgba(255,255,255,.06);
+            --sidebar-active: #3B82F6;
+            --text-muted: #94A3B8;
+            --border-color: #E5E7EB;
+        }
+        [data-bs-theme="dark"] {
+            --bg-main: #0B1120;
+            --card-bg: #1E293B;
+            --card-shadow: 0 1px 3px rgba(0,0,0,.4);
+            --border-color: #334155;
+            --text-muted: #64748B;
+        }
+
+        * { box-sizing: border-box; }
+        body {
+            background: var(--bg-main);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            font-size: 1.2rem;
+            margin: 0;
+            min-height: 100vh;
+            color: #1E293B;
+            -webkit-font-smoothing: antialiased;
+        }
+        [data-bs-theme="dark"] body { color: #E2E8F0; }
+
+        /* ── 侧边栏 ── */
+        .sidebar {
+            position: fixed;
+            top: 0; left: 0;
+            width: var(--sidebar-width);
+            height: 100vh;
+            background: var(--sidebar-bg);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            border-right: 1px solid rgba(255,255,255,.06);
+        }
+        .sidebar::-webkit-scrollbar { width: 4px; }
+        .sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,.1); border-radius: 2px; }
+        .sidebar-header {
+            padding: 1.75rem 1.5rem;
+            border-bottom: 1px solid rgba(255,255,255,.06);
+        }
+        .sidebar-header .logo {
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+        }
+        .sidebar-header .logo-icon {
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.9rem;
+            color: #fff;
+            flex-shrink: 0;
+        }
+        .sidebar-header .logo-text h5 {
+            color: #F1F5F9;
+            margin: 0;
+            font-size: 1.4rem;
+            font-weight: 700;
+            line-height: 1.3;
+        }
+        .sidebar-header .logo-text small {
+            color: #64748B;
+            font-size: 1rem;
+            font-weight: 400;
+        }
+        .sidebar-menu { list-style: none; padding: 1rem 0; margin: 0; flex: 1; }
+        .sidebar-menu .menu-section {
+            padding: 1.2rem 1.6rem .5rem;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            color: #475569;
+            font-weight: 700;
+        }
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.6rem;
+            margin: 5px .8rem;
+            color: #94A3B8;
+            text-decoration: none;
+            font-size: 1.3rem;
+            border-radius: 12px;
+            transition: all .15s ease;
+            font-weight: 500;
+        }
+        .sidebar-menu a:hover {
+            background: var(--sidebar-hover);
+            color: #F1F5F9;
+        }
+        .sidebar-menu a.active {
+            background: rgba(59,130,246,.2);
+            color: #93C5FD;
+            font-weight: 600;
+        }
+        .sidebar-menu a i { font-size: 1.5rem; width: 30px; text-align: center; flex-shrink: 0; }
+        .sidebar-footer {
+            padding: 1.2rem 1.6rem;
+            border-top: 1px solid rgba(255,255,255,.06);
+            font-size: 1rem;
+            color: #475569;
+            line-height: 1.6;
+        }
+
+        /* ── 主内容区 ── */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .topbar {
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1.2rem 2.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+        [data-bs-theme="dark"] .topbar { background: rgba(30,41,59,.95); }
+        .topbar-title {
+            font-size: 1.7rem;
+            font-weight: 700;
+            margin: 0;
+            color: #1E293B;
+        }
+        [data-bs-theme="dark"] .topbar-title { color: #F1F5F9; }
+        .topbar-right { display: flex; align-items: center; gap: 1.25rem; }
+
+        .content-area {
+            padding: 3.5rem;
+            flex: 1;
+        }
+
+        /* ── 卡片 ── */
+        .stat-card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 2.25rem;
+            box-shadow: var(--card-shadow);
+            transition: all .25s ease;
+            border: 1px solid var(--border-color);
+            height: 100%;
+        }
+        .stat-card:hover {
+            box-shadow: var(--card-shadow-hover);
+            transform: translateY(-3px);
+        }
+        .stat-card .stat-icon {
+            width: 66px; height: 66px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.9rem;
+            color: #fff;
+            flex-shrink: 0;
+        }
+        .stat-card .stat-value {
+            font-size: 3rem;
+            font-weight: 800;
+            margin: 0;
+            line-height: 1.2;
+            color: #1E293B;
+        }
+        [data-bs-theme="dark"] .stat-card .stat-value { color: #F1F5F9; }
+        .stat-card .stat-label {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            margin: 0;
+            font-weight: 500;
+        }
+        .stat-card .stat-mini-value {
+            font-size: 2.6rem;
+            font-weight: 800;
+            margin-bottom: .25rem;
+            line-height: 1.2;
+        }
+
+        /* ── 表格卡片 ── */
+        .table-card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            box-shadow: var(--card-shadow);
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+        .table-card .card-header {
+            background: transparent;
+            border-bottom: 1px solid var(--border-color);
+            padding: 1.4rem 2.25rem;
+            font-weight: 700;
+            font-size: 1.35rem;
+            color: #1E293B;
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+        }
+        [data-bs-theme="dark"] .table-card .card-header { color: #F1F5F9; }
+        .table { margin: 0; }
+        .table thead th {
+            background: #F8FAFC;
+            color: #475569;
+            font-weight: 700;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+            border-bottom: 2px solid var(--border-color);
+            white-space: nowrap;
+            padding: 1.1rem 1.5rem;
+        }
+        [data-bs-theme="dark"] .table thead th { background: #0F172A; color: #94A3B8; }
+        .table tbody td {
+            vertical-align: middle;
+            font-size: 1.2rem;
+            padding: 1.1rem 1.5rem;
+            border-color: var(--border-color);
+        }
+        .table tbody tr:hover { background: rgba(59,130,246,.04); }
+
+        /* ── 按钮 ── */
+        .btn {
+            font-weight: 600;
+            border-radius: 12px;
+            padding: .8rem 1.6rem;
+            font-size: 1.2rem;
+            transition: all .15s ease;
+        }
+        .btn-primary {
+            background: var(--primary);
+            border-color: var(--primary);
+            box-shadow: 0 1px 2px rgba(59,130,246,.3);
+        }
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            border-color: var(--primary-dark);
+            box-shadow: 0 4px 12px rgba(59,130,246,.35);
+        }
+        .btn-outline-primary:hover { box-shadow: 0 4px 12px rgba(59,130,246,.15); }
+
+        /* ── 表单 ── */
+        .form-control, .form-select {
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            padding: .85rem 1.2rem;
+            font-size: 1.2rem;
+            transition: all .15s ease;
+        }
+        .form-control:focus, .form-select:focus {
+            box-shadow: 0 0 0 3px rgba(59,130,246,.15);
+            border-color: var(--primary);
+        }
+
+        /* ── 登录页 ── */
+        .login-bg {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #0F172A 0%, #1E3A5F 50%, #1D4ED8 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        .login-bg::before {
+            content: '';
+            position: absolute;
+            width: 700px; height: 700px;
+            background: radial-gradient(circle, rgba(96,165,250,.12) 0%, transparent 70%);
+            top: -250px; right: -200px;
+            border-radius: 50%;
+        }
+        .login-bg::after {
+            content: '';
+            position: absolute;
+            width: 500px; height: 500px;
+            background: radial-gradient(circle, rgba(16,185,129,.1) 0%, transparent 70%);
+            bottom: -150px; left: -150px;
+            border-radius: 50%;
+        }
+        .login-card {
+            background: rgba(255,255,255,.97);
+            backdrop-filter: blur(20px);
+            border-radius: 22px;
+            box-shadow: 0 25px 60px rgba(0,0,0,.25);
+            padding: 3.5rem 3rem;
+            width: 100%;
+            max-width: 480px;
+            position: relative;
+            z-index: 1;
+        }
+        .login-logo {
+            width: 84px; height: 84px;
+            background: linear-gradient(135deg, var(--primary), #1E40AF);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            font-size: 2.4rem;
+            color: #fff;
+            box-shadow: 0 8px 24px rgba(59,130,246,.35);
+        }
+
+        /* ── 主题切换按钮 ── */
+        .theme-toggle {
+            width: 48px; height: 48px;
+            border: none; border-radius: 12px;
+            background: transparent;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            font-size: 1.35rem;
+            color: #64748B;
+            transition: all .2s;
+        }
+        .theme-toggle:hover { background: rgba(0,0,0,.05); }
+        [data-bs-theme="dark"] .theme-toggle:hover { background: rgba(255,255,255,.06); }
+
+        /* ── 徽章 ── */
+        .badge {
+            font-weight: 600;
+            padding: .55em .9em;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        /* ── 图表容器 ── */
+        .chart-container { position: relative; height: 350px; }
+
+        /* ── 通知下拉 ── */
+        .notif-dropdown {
+            position: absolute;
+            top: calc(100% + 8px); right: 0;
+            width: 420px;
+            background: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,.18);
+            border: 1px solid var(--border-color);
+            z-index: 1000;
+            max-height: 480px;
+            overflow-y: auto;
+            display: none;
+        }
+        .notif-dropdown.show { display: block; }
+        .notif-item {
+            padding: 1rem 1.2rem;
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: background .15s;
+        }
+        .notif-item:hover { background: rgba(59,130,246,.03); }
+        .notif-item h6 { margin: 0 0 .25rem; font-size: 1.15rem; font-weight: 600; }
+        .notif-item p { margin: 0; font-size: 1.1rem; color: var(--text-muted); }
+        .notif-item small { color: #94A3B8; font-size: 1rem; }
+
+        /* ── 进度条 ── */
+        .progress { height: 10px; border-radius: 5px; background: var(--border-color); }
+
+        /* ── 响应式 ── */
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); transition: transform .3s ease; }
+            .sidebar.show { transform: translateX(0); }
+            .main-content { margin-left: 0; }
+            .content-area { padding: 1rem; }
+            .stat-card .stat-value { font-size: 1.9rem; }
+            .login-card { padding: 2rem 1.5rem; margin: 1rem; }
+        }
+
+        /* ── 打印 ── */
+        @media print {
+            .sidebar, .topbar, .no-print { display: none !important; }
+            .main-content { margin: 0; }
+            .table-card { box-shadow: none; border: 1px solid #ddd; }
+            .content-area { padding: 0; }
+        }
+
+        /* ── 快捷操作卡片 ── */
+        .quick-action {
+            display: block;
+            padding: 1.6rem 1.2rem;
+            border-radius: 16px;
+            text-decoration: none;
+            color: #1E293B;
+            border: 1px solid var(--border-color);
+            transition: all .2s;
+            text-align: center;
+            background: var(--card-bg);
+        }
+        .quick-action:hover {
+            border-color: var(--primary);
+            box-shadow: 0 4px 20px rgba(59,130,246,.15);
+            color: var(--primary);
+            transform: translateY(-2px);
+        }
+        .quick-action i { font-size: 2.5rem; margin-bottom: .6rem; display: block; }
+        .quick-action span { font-size: 1.15rem; font-weight: 600; }
+
+        /* ── 搜索栏 ── */
+        .search-bar {
+            display: flex; gap: .5rem; flex-wrap: wrap; align-items: center;
+            margin-bottom: 1.25rem;
+        }
+
+        /* ── page header ── */
+        .page-header {
+            margin-bottom: 3rem;
+        }
+        .page-header h4 {
+            font-weight: 800;
+            margin: 0;
+            color: #1E293B;
+            font-size: 2.2rem;
+        }
+        [data-bs-theme="dark"] .page-header h4 { color: #F1F5F9; }
+        .page-header p {
+            color: var(--text-muted);
+            margin: .35rem 0 0;
+            font-size: 1.25rem;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    {% if current_user.is_authenticated %}
+    <!-- 侧边栏 -->
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <div class="logo-icon"><i class="bi bi-mortarboard-fill"></i></div>
+                <div class="logo-text">
+                    <h5>成绩管理系统</h5>
+                    <small>刘聿康</small>
+                </div>
+            </div>
+        </div>
+        <ul class="sidebar-menu">
+            {% if current_user.is_super_admin %}
+            <li class="menu-section">系统管理</li>
+            <li><a href="{{ url_for('admin.dashboard') }}" class="{% if request.endpoint == 'admin.dashboard' %}active{% endif %}"><i class="bi bi-speedometer2"></i> 仪表板</a></li>
+            <li><a href="{{ url_for('admin.user_list') }}" class="{% if 'user' in request.endpoint %}active{% endif %}"><i class="bi bi-people"></i> 用户管理</a></li>
+            <li class="menu-section">基础信息</li>
+            <li><a href="{{ url_for('admin.class_list') }}" class="{% if 'class' in request.endpoint %}active{% endif %}"><i class="bi bi-building"></i> 班级管理</a></li>
+            <li><a href="{{ url_for('admin.student_list') }}" class="{% if 'student' in request.endpoint %}active{% endif %}"><i class="bi bi-person-lines-fill"></i> 学生管理</a></li>
+            <li><a href="{{ url_for('admin.teacher_list') }}" class="{% if 'teacher' in request.endpoint %}active{% endif %}"><i class="bi bi-person-badge"></i> 教师管理</a></li>
+            <li><a href="{{ url_for('admin.course_list') }}" class="{% if 'course' in request.endpoint %}active{% endif %}"><i class="bi bi-book"></i> 课程管理</a></li>
+            <li class="menu-section">教务管理</li>
+            <li><a href="{{ url_for('admin.revision_list') }}" class="{% if 'revision' in request.endpoint %}active{% endif %}"><i class="bi bi-clipboard-check"></i> 成绩审核</a></li>
+            <li><a href="{{ url_for('teacher.grade_search') }}" class="{% if request.endpoint == 'teacher.grade_search' %}active{% endif %}"><i class="bi bi-search"></i> 成绩查询</a></li>
+            <li><a href="{{ url_for('admin.notification_list') }}" class="{% if 'notification' in request.endpoint %}active{% endif %}"><i class="bi bi-megaphone"></i> 通知公告</a></li>
+            <li class="menu-section">系统</li>
+            <li><a href="{{ url_for('admin.operation_logs') }}" class="{% if 'log' in request.endpoint %}active{% endif %}"><i class="bi bi-journal-text"></i> 操作日志</a></li>
+            <li><a href="{{ url_for('admin.login_logs') }}" class="{% if 'login_log' in request.endpoint %}active{% endif %}"><i class="bi bi-box-arrow-in-right"></i> 登录日志</a></li>
+            <li><a href="{{ url_for('admin.settings') }}" class="{% if 'setting' in request.endpoint %}active{% endif %}"><i class="bi bi-gear"></i> 系统设置</a></li>
+            <li><a href="{{ url_for('admin.backup') }}" class="{% if 'backup' in request.endpoint %}active{% endif %}"><i class="bi bi-shield-check"></i> 数据备份</a></li>
+
+            {% elif current_user.is_academic %}
+            <li class="menu-section">教务管理</li>
+            <li><a href="{{ url_for('admin.academic_dashboard') }}" class="{% if request.endpoint == 'admin.academic_dashboard' %}active{% endif %}"><i class="bi bi-speedometer2"></i> 仪表板</a></li>
+            <li><a href="{{ url_for('admin.class_list') }}" class="{% if 'class' in request.endpoint %}active{% endif %}"><i class="bi bi-building"></i> 班级管理</a></li>
+            <li><a href="{{ url_for('admin.student_list') }}" class="{% if 'student' in request.endpoint %}active{% endif %}"><i class="bi bi-person-lines-fill"></i> 学生管理</a></li>
+            <li><a href="{{ url_for('admin.teacher_list') }}" class="{% if 'teacher' in request.endpoint %}active{% endif %}"><i class="bi bi-person-badge"></i> 教师管理</a></li>
+            <li><a href="{{ url_for('admin.course_list') }}" class="{% if 'course' in request.endpoint %}active{% endif %}"><i class="bi bi-book"></i> 课程管理</a></li>
+            <li><a href="{{ url_for('admin.revision_list') }}" class="{% if 'revision' in request.endpoint %}active{% endif %}"><i class="bi bi-clipboard-check"></i> 成绩审核</a></li>
+            <li><a href="{{ url_for('teacher.grade_search') }}" class="{% if request.endpoint == 'teacher.grade_search' %}active{% endif %}"><i class="bi bi-search"></i> 成绩查询</a></li>
+            <li><a href="{{ url_for('admin.notification_list') }}" class="{% if 'notification' in request.endpoint %}active{% endif %}"><i class="bi bi-megaphone"></i> 通知公告</a></li>
+            <li><a href="{{ url_for('admin.operation_logs') }}" class="{% if 'log' in request.endpoint %}active{% endif %}"><i class="bi bi-journal-text"></i> 操作日志</a></li>
+
+            {% elif current_user.is_teacher %}
+            <li class="menu-section">教学管理</li>
+            <li><a href="{{ url_for('teacher.dashboard') }}" class="{% if request.endpoint == 'teacher.dashboard' %}active{% endif %}"><i class="bi bi-speedometer2"></i> 仪表板</a></li>
+            <li><a href="{{ url_for('admin.course_list') }}" class="{% if 'course' in request.endpoint %}active{% endif %}"><i class="bi bi-book"></i> 我的课程</a></li>
+            <li><a href="{{ url_for('teacher.grade_search') }}" class="{% if request.endpoint == 'teacher.grade_search' %}active{% endif %}"><i class="bi bi-search"></i> 成绩查询</a></li>
+            <li><a href="{{ url_for('admin.student_list') }}" class="{% if 'student' in request.endpoint %}active{% endif %}"><i class="bi bi-person-lines-fill"></i> 学生信息</a></li>
+
+            {% elif current_user.is_student %}
+            <li class="menu-section">我的成绩</li>
+            <li><a href="{{ url_for('student.dashboard') }}" class="{% if request.endpoint == 'student.dashboard' %}active{% endif %}"><i class="bi bi-speedometer2"></i> 仪表板</a></li>
+            <li><a href="{{ url_for('student.my_grades') }}" class="{% if request.endpoint == 'student.my_grades' %}active{% endif %}"><i class="bi bi-list-check"></i> 我的成绩</a></li>
+            <li><a href="{{ url_for('student.transcript') }}" class="{% if request.endpoint == 'student.transcript' %}active{% endif %}"><i class="bi bi-file-earmark-text"></i> 成绩单</a></li>
+            <li><a href="{{ url_for('student.ranking') }}" class="{% if request.endpoint == 'student.ranking' %}active{% endif %}"><i class="bi bi-trophy"></i> 班级排名</a></li>
+            {% endif %}
+
+            <li class="menu-section">通用</li>
+            <li><a href="{{ url_for('auth.change_password') }}"><i class="bi bi-key"></i> 修改密码</a></li>
+            <li><a href="{{ url_for('auth.logout') }}"><i class="bi bi-box-arrow-right"></i> 退出登录</a></li>
+        </ul>
+        <div class="sidebar-footer">
+            v1.0 &copy; 2026 刘聿康<br>
+            学生成绩管理系统
+        </div>
+    </nav>
+
+    <!-- 主内容 -->
+    <div class="main-content">
+        <div class="topbar">
+            <div class="d-flex align-items-center gap-2">
+                <button class="btn btn-sm btn-light d-md-none" onclick="document.getElementById('sidebar').classList.toggle('show')">
+                    <i class="bi bi-list"></i>
+                </button>
+                <h6 class="topbar-title">{% block page_title %}{% endblock %}</h6>
+            </div>
+            <div class="topbar-right">
+                <!-- 通知 -->
+                <div class="dropdown position-relative">
+                    <button class="theme-toggle position-relative" onclick="document.getElementById('notifDropdown').classList.toggle('show')">
+                        <i class="bi bi-bell"></i>
+                        {% if unread_notifs %}
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size:.95rem;">{{ unread_notifs|length }}</span>
+                        {% endif %}
+                    </button>
+                    <div class="notif-dropdown" id="notifDropdown">
+                        <div class="p-3 border-bottom fw-bold small">通知公告</div>
+                        {% if unread_notifs %}
+                            {% for n in unread_notifs %}
+                            <div class="notif-item">
+                                <h6>{{ n.title }}{% if n.is_pinned %} <i class="bi bi-pin-angle-fill text-warning"></i>{% endif %}</h6>
+                                <p>{{ n.content[:60] }}{% if n.content|length > 60 %}...{% endif %}</p>
+                                <small>{{ n.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="p-4 text-center text-muted small">暂无通知</div>
+                        {% endif %}
+                    </div>
+                </div>
+                <!-- 主题切换 -->
+                <button class="theme-toggle" onclick="toggleTheme()" title="切换深色/浅色模式">
+                    <i class="bi bi-sun-fill" id="themeIcon"></i>
+                </button>
+                <!-- 用户信息 -->
+                <div class="d-flex align-items-center gap-2">
+                    <div class="text-end">
+                        <div style="font-size:1.2rem;font-weight:700;color:#1E293B;">{{ current_user.name }}</div>
+                        <div style="font-size:1rem;color:var(--text-muted);">{{ current_user.role_name }}</div>
+                    </div>
+                    <div style="width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.2rem;">
+                        {{ current_user.name[0] }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="content-area">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert" style="border-radius:10px;border:none;box-shadow:0 1px 3px rgba(0,0,0,.08);">
+                        <i class="bi bi-{% if category == 'success' %}check-circle{% elif category == 'danger' %}exclamation-triangle{% elif category == 'warning' %}exclamation-circle{% else %}info-circle{% endif %} me-2"></i>
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+    {% else %}
+        {% block guest_content %}{% endblock %}
+    {% endif %}
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script>
+        // 主题切换
+        function toggleTheme() {
+            const html = document.documentElement;
+            const current = html.getAttribute('data-bs-theme');
+            const next = current === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-bs-theme', next);
+            const icon = document.getElementById('themeIcon');
+            if (icon) icon.className = next === 'dark' ? 'bi bi-moon-stars-fill' : 'bi bi-sun-fill';
+            localStorage.setItem('theme', next);
+        }
+        (function() {
+            const saved = localStorage.getItem('theme');
+            if (saved) {
+                document.documentElement.setAttribute('data-bs-theme', saved);
+                const icon = document.getElementById('themeIcon');
+                if (icon) icon.className = saved === 'dark' ? 'bi bi-moon-stars-fill' : 'bi bi-sun-fill';
+            }
+        })();
+        // 关闭通知下拉
+        document.addEventListener('click', function(e) {
+            const dropdown = document.getElementById('notifDropdown');
+            if (dropdown && !e.target.closest('.dropdown')) {
+                dropdown.classList.remove('show');
+            }
+        });
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

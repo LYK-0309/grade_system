@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}班级管理{% endblock %}
+{% block page_title %}班级管理{% endblock %}
+{% block content %}
+<div class="table-card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-building"></i> 班级列表</span>
+        <a href="{{ url_for('admin.class_form') }}" class="btn btn-sm btn-primary"><i class="bi bi-plus-lg"></i> 新建班级</a>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead><tr><th>ID</th><th>班级名称</th><th>年级</th><th>专业</th><th>学制</th><th>学生数</th><th>创建时间</th><th>操作</th></tr></thead>
+            <tbody>
+                {% for c in classes %}
+                <tr>
+                    <td>{{ c.id }}</td>
+                    <td><strong>{{ c.name }}</strong></td>
+                    <td>{{ c.grade or '-' }}</td>
+                    <td>{{ c.major or '-' }}</td>
+                    <td>{{ c.duration or '-' }}</td>
+                    <td><span class="badge bg-primary">{{ c.students.count() }}</span></td>
+                    <td><small>{{ c.created_at.strftime('%Y-%m-%d') if c.created_at else '-' }}</small></td>
+                    <td>
+                        <a href="{{ url_for('admin.class_form', class_id=c.id) }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
+                        <form method="POST" action="{{ url_for('admin.class_delete', class_id=c.id) }}" class="d-inline" onsubmit="return confirm('确定删除?')">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="8" class="text-center text-muted py-4">暂无班级数据</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

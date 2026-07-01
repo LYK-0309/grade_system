@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% block title %}成绩修改审核{% endblock %}
+{% block page_title %}成绩修改审核{% endblock %}
+{% block content %}
+<div class="table-card">
+    <div class="card-header"><i class="bi bi-clipboard-check"></i> 成绩修改申请</div>
+    <div class="p-3">
+        <form method="GET" class="d-flex gap-2">
+            <select name="status" class="form-select form-select-sm" style="width:auto;" onchange="this.form.submit()">
+                <option value="pending" {% if status == 'pending' %}selected{% endif %}>待审核</option>
+                <option value="approved" {% if status == 'approved' %}selected{% endif %}>已批准</option>
+                <option value="rejected" {% if status == 'rejected' %}selected{% endif %}>已驳回</option>
+                <option value="">全部</option>
+            </select>
+        </form>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead><tr><th>时间</th><th>学生</th><th>课程</th><th>原分数</th><th>新分数</th><th>修改人</th><th>原因</th><th>状态</th><th>操作</th></tr></thead>
+            <tbody>
+                {% for r in revisions %}
+                <tr>
+                    <td><small>{{ r.created_at.strftime('%Y-%m-%d %H:%M') }}</small></td>
+                    <td>{{ r.grade.student.name }}</td>
+                    <td>{{ r.grade.course.name }}</td>
+                    <td>{{ r.original_score or r.original_special or '-' }}</td>
+                    <td><strong class="text-primary">{{ r.new_score or r.new_special or '-' }}</strong></td>
+                    <td>{{ r.modifier_name }}</td>
+                    <td><small>{{ r.reason[:30] }}</small></td>
+                    <td>
+                        {% if r.status == 'pending' %}<span class="badge bg-warning">待审核</span>
+                        {% elif r.status == 'approved' %}<span class="badge bg-success">已批准</span>
+                        {% else %}<span class="badge bg-danger">已驳回</span>{% endif %}
+                    </td>
+                    <td>
+                        {% if r.status == 'pending' %}
+                        <form method="POST" action="{{ url_for('admin.revision_approve', rev_id=r.id) }}" class="d-inline"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-sm btn-outline-success" title="批准"><i class="bi bi-check-lg"></i></button></form>
+                        <form method="POST" action="{{ url_for('admin.revision_reject', rev_id=r.id) }}" class="d-inline"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-sm btn-outline-danger" title="驳回"><i class="bi bi-x-lg"></i></button></form>
+                        {% else %}<small class="text-muted">{{ r.reviewed_at.strftime('%m-%d %H:%M') if r.reviewed_at else '-' }}</small>{% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="9" class="text-center text-muted py-4">暂无申请</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

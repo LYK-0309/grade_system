@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block title %}{{ code }} - {{ title }}{% endblock %}
+{% block guest_content %}
+<div class="login-bg">
+    <div class="login-card text-center">
+        <div class="login-logo" style="background:linear-gradient(135deg,#DC2626,#991B1B);">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+        </div>
+        <h1 style="font-size:4rem;font-weight:800;color:#DC2626;margin:0;">{{ code }}</h1>
+        <h4 class="mt-2 mb-3">{{ title }}</h4>
+        <p class="text-muted">{{ msg }}</p>
+        <a href="{{ url_for('auth.login') }}" class="btn btn-primary mt-3"><i class="bi bi-house"></i> 返回首页</a>
+    </div>
+</div>
+{% endblock %}

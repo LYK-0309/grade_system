@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block title %}成绩查询{% endblock %}
+{% block page_title %}成绩查询{% endblock %}
+{% block content %}
+<div class="table-card">
+    <div class="card-header"><i class="bi bi-search"></i> 成绩查询</div>
+    <div class="p-3">
+        <form method="GET" class="row g-2">
+            <div class="col-auto"><select name="class_id" class="form-select form-select-sm"><option value="">全部班级</option>{% for c in classes %}<option value="{{ c.id }}" {% if class_id == c.id %}selected{% endif %}>{{ c.name }}</option>{% endfor %}</select></div>
+            <div class="col-auto"><select name="course_id" class="form-select form-select-sm"><option value="">全部课程</option>{% for c in courses %}<option value="{{ c.id }}" {% if course_id == c.id %}selected{% endif %}>{{ c.name }}</option>{% endfor %}</select></div>
+            <div class="col-auto"><select name="exam_type" class="form-select form-select-sm"><option value="">全部批次</option><option value="期中" {% if exam_type == '期中' %}selected{% endif %}>期中</option><option value="期末" {% if exam_type == '期末' %}selected{% endif %}>期末</option><option value="补考" {% if exam_type == '补考' %}selected{% endif %}>补考</option><option value="重修" {% if exam_type == '重修' %}selected{% endif %}>重修</option></select></div>
+            <div class="col-auto"><input type="text" name="keyword" value="{{ keyword }}" class="form-control form-control-sm" placeholder="学号/姓名"></div>
+            <div class="col-auto"><button type="submit" class="btn btn-sm btn-primary"><i class="bi bi-search"></i> 查询</button></div>
+        </form>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead><tr><th>学号</th><th>姓名</th><th>班级</th><th>课程</th><th>批次</th><th>成绩</th><th>等级</th><th>绩点</th><th>特殊</th></tr></thead>
+            <tbody>
+                {% for g in grades %}
+                <tr>
+                    <td><strong>{{ g.student.student_no }}</strong></td>
+                    <td>{{ g.student.name }}</td>
+                    <td><small>{{ g.student.class_info.name if g.student.class_info else '-' }}</small></td>
+                    <td>{{ g.course.name }}</td>
+                    <td><span class="badge bg-secondary">{{ g.exam_type }}</span></td>
+                    <td><strong class="{% if g.is_pass %}text-success{% else %}text-danger{% endif %}">{{ g.score_display }}</strong></td>
+                    <td><span class="badge bg-{% if g.grade_level == 'A' %}success{% elif g.grade_level == 'B' %}primary{% elif g.grade_level == 'C' %}info{% elif g.grade_level == 'D' %}warning{% else %}danger{% endif %}">{{ g.grade_level }}</span></td>
+                    <td>{{ '%.1f' % g.gpa if g.gpa else '0.0' }}</td>
+                    <td>{% if g.special_mark %}<span class="badge bg-danger">{{ g.special_mark }}</span>{% else %}-{% endif %}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="9" class="text-center text-muted py-4">暂无数据，请输入查询条件</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="p-3 text-muted small">共 {{ grades|length }} 条记录</div>
+</div>
+{% endblock %}

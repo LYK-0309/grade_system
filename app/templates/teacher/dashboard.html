@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% block title %}教师仪表板{% endblock %}
+{% block page_title %}教师仪表板{% endblock %}
+{% block content %}
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="stat-card d-flex align-items-center gap-3">
+            <div class="stat-icon" style="background:linear-gradient(135deg,#2563EB,#1E40AF);"><i class="bi bi-book"></i></div>
+            <div><p class="stat-value">{{ stats.course_count }}</p><p class="stat-label">授课数</p></div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card d-flex align-items-center gap-3">
+            <div class="stat-icon" style="background:linear-gradient(135deg,#16A34A,#15803D);"><i class="bi bi-mortarboard"></i></div>
+            <div><p class="stat-value">{{ stats.student_count }}</p><p class="stat-label">学生数</p></div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card d-flex align-items-center gap-3">
+            <div class="stat-icon" style="background:linear-gradient(135deg,#F59E0B,#D97706);"><i class="bi bi-clipboard-data"></i></div>
+            <div><p class="stat-value">{{ stats.grade_count }}</p><p class="stat-label">成绩记录</p></div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card d-flex align-items-center gap-3">
+            <div class="stat-icon" style="background:linear-gradient(135deg,#EC4899,#DB2777);"><i class="bi bi-clipboard-check"></i></div>
+            <div><p class="stat-value">{{ stats.pending_revisions }}</p><p class="stat-label">待审核修改</p></div>
+        </div>
+    </div>
+</div>
+
+<div class="table-card">
+    <div class="card-header"><i class="bi bi-book"></i> 我的课程</div>
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead><tr><th>课程编号</th><th>课程名称</th><th>班级</th><th>学分</th><th>考核</th><th>锁定</th><th>操作</th></tr></thead>
+            <tbody>
+                {% for c in courses %}
+                <tr>
+                    <td><strong>{{ c.course_code }}</strong></td>
+                    <td>{{ c.name }}</td>
+                    <td><small>{{ c.class_info.name if c.class_info else '-' }}</small></td>
+                    <td>{{ c.credit }}</td>
+                    <td><span class="badge bg-{{ c.assessment_badge }}">{{ c.assessment_type }}</span></td>
+                    <td>{% if c.is_locked %}<span class="badge bg-danger">锁定</span>{% else %}<span class="badge bg-success">正常</span>{% endif %}</td>
+                    <td>
+                        <a href="{{ url_for('teacher.course_detail', course_id=c.id) }}" class="btn btn-sm btn-outline-primary" title="详情"><i class="bi bi-eye"></i></a>
+                        {% if not c.is_locked or current_user.is_super_admin %}
+                        <a href="{{ url_for('teacher.grade_entry', course_id=c.id) }}" class="btn btn-sm btn-outline-success" title="录入"><i class="bi bi-pencil-square"></i></a>
+                        {% endif %}
+                        <a href="{{ url_for('teacher.grade_export', course_id=c.id) }}" class="btn btn-sm btn-outline-info" title="导出"><i class="bi bi-download"></i></a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="7" class="text-center text-muted py-4">暂无课程</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
