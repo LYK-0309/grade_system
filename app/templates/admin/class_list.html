@@ -5,14 +5,18 @@
 <div class="table-card">
     <div class="card-header d-flex justify-content-between align-items-center">
         <span><i class="bi bi-building"></i> 班级列表</span>
-        <a href="{{ url_for('admin.class_form') }}" class="btn btn-sm btn-primary"><i class="bi bi-plus-lg"></i> 新建班级</a>
+        <div class="d-flex gap-2">
+            <button class="btn btn-sm btn-outline-danger" onclick="batchDelete('classes')" id="batchDeleteBtn" disabled><i class="bi bi-trash"></i> 批量删除</button>
+            <a href="{{ url_for('admin.class_form') }}" class="btn btn-sm btn-primary"><i class="bi bi-plus-lg"></i> 新建班级</a>
+        </div>
     </div>
     <div class="table-responsive">
         <table class="table table-hover">
-            <thead><tr><th>ID</th><th>班级名称</th><th>年级</th><th>专业</th><th>学制</th><th>学生数</th><th>创建时间</th><th>操作</th></tr></thead>
+            <thead><tr><th style="width:40px;"><input type="checkbox" class="form-check-input" id="selectAll" onchange="toggleAll(this)"></th><th>ID</th><th>班级名称</th><th>年级</th><th>专业</th><th>学制</th><th>学生数</th><th>创建时间</th><th>操作</th></tr></thead>
             <tbody>
                 {% for c in classes %}
                 <tr>
+                    <td><input type="checkbox" class="form-check-input item-checkbox" value="{{ c.id }}"></td>
                     <td>{{ c.id }}</td>
                     <td><strong>{{ c.name }}</strong></td>
                     <td>{{ c.grade or '-' }}</td>
@@ -29,10 +33,47 @@
                     </td>
                 </tr>
                 {% else %}
-                <tr><td colspan="8" class="text-center text-muted py-4">暂无班级数据</td></tr>
+                <tr><td colspan="9" class="text-center text-muted py-4">暂无班级数据</td></tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
 </div>
+
+<script>
+function toggleAll(el) {
+    document.querySelectorAll('.item-checkbox').forEach(cb => cb.checked = el.checked);
+    updateBatchBtn();
+}
+document.addEventListener('change', function(e) {
+    if (e.target.classList.contains('item-checkbox')) updateBatchBtn();
+});
+function updateBatchBtn() {
+    const checked = document.querySelectorAll('.item-checkbox:checked').length;
+    document.getElementById('batchDeleteBtn').disabled = checked === 0;
+}
+function batchDelete(target) {
+    const checked = document.querySelectorAll('.item-checkbox:checked');
+    if (checked.length === 0) return;
+    const ids = Array.from(checked).map(c => c.value).join(',');
+    if (!confirm(`确定要删除选中的 ${checked.length} 个班级吗？此操作不可恢复！`)) return;
+
+    const formData = new FormData();
+    formData.append('target', target);
+    formData.append('ids', ids);
+    formData.append('csrf_token', '{{ csrf_token() }}');
+
+    fetch('{{ url_for("admin.batch_delete") }}', { method: 'POST', body: formData })
+        .then(r => r.json())
+        .then(data => {
+            let msg = data.message;
+            if (data.failed && data.failed.length > 0) {
+                msg += '\n\n失败详情：\n' + data.failed.join('\n');
+            }
+            alert(msg);
+            location.reload();
+        })
+        .catch(err => { alert('操作失败: ' + err); });
+}
+</script>
 {% endblock %}

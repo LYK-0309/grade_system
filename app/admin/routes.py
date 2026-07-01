@@ -706,3 +706,118 @@ def backup():
 def backup_download(filename):
     backup_dir = current_app.config['BACKUP_FOLDER']
     return send_file(os.path.join(backup_dir, filename), as_attachment=True)
+
+
+# ── 批量删除 ──────────────────────────────────────────
+@admin_bp.route('/batch_delete', methods=['POST'])
+@login_required
+@admin_required
+def batch_delete():
+    """批量删除：支持 users / students / teachers / courses / classes / notifications"""
+    target = request.form.get('target', '')
+    ids_str = request.form.get('ids', '')
+    if not ids_str:
+        return jsonify({'success': False, 'message': '未选择任何项'})
+
+    try:
+        ids = [int(x.strip()) for x in ids_str.split(',') if x.strip()]
+    except ValueError:
+        return jsonify({'success': False, 'message': 'ID格式错误'})
+
+    if not ids:
+        return jsonify({'success': False, 'message': '未选择任何项'})
+
+    success = 0
+    failed = []
+
+    if target == 'users':
+        for uid in ids:
+            user = User.query.get(uid)
+            if not user:
+                failed.append(f'用户ID {uid} 不存在')
+                continue
+            if user.username == 'LYK':
+                failed.append(f'不能删除超级管理员 LYK')
+                continue
+            log_operation('delete', '批量删除用户', f'用户 {user.username}')
+            db.session.delete(user)
+            success += 1
+
+    elif target == 'students':
+        for sid in ids:
+            stu = Student.query.get(sid)
+            if not stu:
+                failed.append(f'学生ID {sid} 不存在')
+                continue
+            if stu.grades.count() > 0:
+                failed.append(f'{stu.name}({stu.student_no}) 有成绩记录，无法删除')
+                continue
+            # 同时删除关联用户
+            if stu.user:
+                db.session.delete(stu.user)
+            log_operation('delete', '批量删除学生', f'学生 {stu.name}({stu.student_no})')
+            db.session.delete(stu)
+            success += 1
+
+    elif target == 'teachers':
+        for tid in ids:
+            t = Teacher.query.get(tid)
+            if not t:
+                failed.append(f'教师ID {tid} 不存在')
+                continue
+            if t.courses.count() > 0:
+                failed.append(f'{t.name}({t.teacher_no}) 有授课记录，无法删除')
+                continue
+            if t.user:
+                db.session.delete(t.user)
+            log_operation('delete', '批量删除教师', f'教师 {t.name}({t.teacher_no})')
+            db.session.delete(t)
+            success += 1
+
+    elif target == 'courses':
+        for cid in ids:
+            c = Course.query.get(cid)
+            if not c:
+                failed.append(f'课程ID {cid} 不存在')
+                continue
+            if c.grades.count() > 0:
+                failed.append(f'{c.name}({c.course_code}) 有成绩记录，无法删除')
+                continue
+            log_operation('delete', '批量删除课程', f'课程 {c.name}({c.course_code})')
+            db.session.delete(c)
+            success += 1
+
+    elif target == 'classes':
+        for cid in ids:
+            cls = ClassInfo.query.get(cid)
+            if not cls:
+                failed.append(f'班级ID {cid} 不存在')
+                continue
+            if cls.students.count() > 0:
+                failed.append(f'{cls.name} 下还有学生，无法删除')
+                continue
+            log_operation('delete', '批量删除班级', f'班级 {cls.name}')
+            db.session.delete(cls)
+            success += 1
+
+    elif target == 'notifications':
+        for nid in ids:
+            n = Notification.query.get(nid)
+            if not n:
+                failed.append(f'通知ID {nid} 不存在')
+                continue
+            db.session.delete(n)
+            success += 1
+        log_operation('delete', '批量删除通知', f'共删除 {success} 条通知')
+
+    else:
+        return jsonify({'success': False, 'message': f'不支持的目标类型: {target}'})
+
+    db.session.commit()
+
+    return jsonify({
+        'success': True,
+        'deleted': success,
+        'failed': failed,
+        'message': f'成功删除 {success} 条' + (f'，{len(failed)} 条失败' if failed else '')
+    })
