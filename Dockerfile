@@ -2,14 +2,9 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# 安装系统依赖
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    gcc \
-    && rm -rf /var/lib/apt/lists/*
-
-# 安装 Python 依赖
+# 安装 Python 依赖（纯 wheel，无需编译器）
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+RUN pip install --no-cache-dir --only-binary :all: -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 
 # 复制项目代码
 COPY . .
